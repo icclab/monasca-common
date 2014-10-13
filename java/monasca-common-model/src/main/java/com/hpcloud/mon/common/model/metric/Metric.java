@@ -33,7 +33,7 @@ public class Metric implements Serializable {
   public String name;
   public Map<String, String> dimensions;
   public long timestamp;
-  public double value;
+  public String value;
   public double[][] timeValues = null;
   private MetricDefinition definition;
 
@@ -44,14 +44,29 @@ public class Metric implements Serializable {
     this.name = definition.name;
     setDimensions(definition.dimensions);
     this.timestamp = timestamp;
-    this.value = Preconditions.checkNotNull(value, "value");
+    this.value = String.valueOf(Preconditions.checkNotNull(value, "value"));
+  }
+  
+  public Metric(@NotNull MetricDefinition definition, long timestamp, String value) {
+	this.definition = Preconditions.checkNotNull(definition, "definition");
+	this.name = definition.name;
+	setDimensions(definition.dimensions);
+	this.timestamp = timestamp;
+	this.value = Preconditions.checkNotNull(value, "value");
   }
 
   public Metric(String name, @Nullable Map<String, String> dimensions, long timestamp, double value) {
     this.name = Preconditions.checkNotNull(name, "name");
     setDimensions(dimensions);
     this.timestamp = timestamp;
-    this.value = value;
+    this.value = String.valueOf(value);
+  }
+  
+  public Metric(String name, @Nullable Map<String, String> dimensions, long timestamp, String value) {
+	this.name = Preconditions.checkNotNull(name, "name");
+	setDimensions(dimensions);
+	this.timestamp = timestamp;
+	this.value = String.valueOf(value);
   }
 
   public Metric(String name, @Nullable Map<String, String> dimensions, long timestamp,
@@ -106,7 +121,11 @@ public class Metric implements Serializable {
       return false;
     if (timestamp != other.timestamp)
       return false;
-    if (Double.doubleToLongBits(value) != Double.doubleToLongBits(other.value))
+    if (value == null) {
+    	if (other.value != null)
+    		return false;
+    	return true;
+    } else if (!value.equals(other.value))
       return false;
     return true;
   }
@@ -121,7 +140,7 @@ public class Metric implements Serializable {
     result = prime * result + Arrays.hashCode(timeValues);
     result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
     long temp;
-    temp = Double.doubleToLongBits(value);
+    temp = value.hashCode();
     result = prime * result + (int) (temp ^ (temp >>> 32));
     return result;
   }
@@ -150,11 +169,11 @@ public class Metric implements Serializable {
     this.timestamp = timestamp;
   }
 
-  public double getValue() {
+  public String getValue() {
     return value;
   }
 
-  public void setValue(double value) {
+  public void setValue(String value) {
     this.value = value;
   }
 

@@ -41,6 +41,10 @@ relational_operator
     | lte
     | gt
     | gte
+    | eq
+    | neq
+    | like
+    | regexp
     ;
 
 lt
@@ -62,6 +66,24 @@ gte
     : GTE
     | GTE_S
     ;
+
+eq
+	: EQ
+	| EQ_S
+	;
+
+neq
+	: NEQ
+	| NEQ_S
+	;
+
+like
+	: LIKE
+	;
+	
+regexp
+	: REGEXP
+	;
 
 and
     : AND
@@ -107,6 +129,10 @@ keyword
     | LTE
     | GT
     | GTE
+    | EQ
+    | NEQ
+    | LIKE
+    | REGEXP
     | AND
     | OR
     | MIN
@@ -123,6 +149,7 @@ period
 literal
     : DECIMAL
     | INTEGER
+    | STRING
     ;
 
 repeat
@@ -165,6 +192,30 @@ GTE
 	
 GTE_S
 	: '>='
+	;
+	
+EQ
+	: [eE][qQ]
+	;
+
+EQ_S
+	: '=='
+	;
+
+NEQ
+	: [nN][eE][qQ]
+	;
+
+NEQ_S
+	: '!='
+	;
+
+LIKE
+	: [lL][iI][kK][eE]
+	;
+	
+REGEXP
+	: [rR][eE][gG][eE][xX][pP]
 	;
 	
 AND

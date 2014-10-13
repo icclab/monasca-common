@@ -59,9 +59,14 @@ public final class Metrics {
         jgen.writeObjectField("dimensions", value.dimensions);
       jgen.writeNumberField("timestamp", value.timestamp);
 
-      if (value.timeValues == null)
-        jgen.writeNumberField("value", value.value);
-      else {
+      if (value.timeValues == null) {
+    	try {
+    	  double d = Double.parseDouble(value.value);
+    	  jgen.writeNumberField("value", d);
+    	} catch (Exception e) {
+    	  jgen.writeStringField("value", value.value);
+    	}
+      } else {
         jgen.writeArrayFieldStart("time_values");
         for (double[] timeValue : value.timeValues) {
           jgen.writeStartArray();

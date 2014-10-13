@@ -39,12 +39,22 @@ public class AlarmSubExpression implements Serializable {
   private AggregateFunction function;
   private MetricDefinition metricDefinition;
   private AlarmOperator operator;
-  private double threshold;
+  private String threshold;
   private int period;
   private int periods;
 
   public AlarmSubExpression(AggregateFunction function, MetricDefinition metricDefinition,
-      AlarmOperator operator, double threshold, int period, int periods) {
+	AlarmOperator operator, int threshold, int period, int periods) {
+	    this.function = function;
+	    this.metricDefinition = metricDefinition;
+	    this.operator = operator;
+	    this.threshold = String.valueOf(threshold);
+	    this.period = period;
+	    this.periods = periods;
+	  }
+  
+  public AlarmSubExpression(AggregateFunction function, MetricDefinition metricDefinition,
+      AlarmOperator operator, String threshold, int period, int periods) {
     this.function = function;
     this.metricDefinition = metricDefinition;
     this.operator = operator;
@@ -97,16 +107,23 @@ public class AlarmSubExpression implements Serializable {
       return false;
     if (periods != other.periods)
       return false;
-    if (Double.doubleToLongBits(threshold) != Double.doubleToLongBits(other.threshold))
-      return false;
+    if (threshold == null) {
+    	if (other.threshold != null)
+    		return false;    	
+    } else if (!threshold.equals(other.threshold))
+    	return false;
     return true;
   }
 
   /**
    * Evaluates the {@code value} against the threshold and returns the result.
    */
-  public boolean evaluate(double value) {
+  public boolean evaluate(String value) {
     return operator.evaluate(value, threshold);
+  }
+  
+  public boolean evaluate(double value) {
+	return operator.evaluate(value, Double.parseDouble(threshold));
   }
 
   /**
@@ -117,7 +134,13 @@ public class AlarmSubExpression implements Serializable {
     sb.append(function).append('(').append(metricDefinition.toExpression());
     if (period != 60)
       sb.append(", ").append(period);
-    sb.append(") ").append(operator).append(' ').append(threshold);
+    try {
+      double d = Double.parseDouble(threshold);
+      sb.append(") ").append(operator).append(' ').append(d);
+    } catch (Exception e) {
+      sb.append(") ").append(operator).append(' ').append(threshold);
+    }
+    
     if (periods != 1)
       sb.append(" times ").append(periods);
     return sb.toString();
@@ -144,7 +167,11 @@ public class AlarmSubExpression implements Serializable {
   }
 
   public double getThreshold() {
-    return threshold;
+    return Double.valueOf(threshold);
+  }
+  
+  public String getPattern() {
+	return threshold;
   }
 
   @Override
@@ -157,7 +184,7 @@ public class AlarmSubExpression implements Serializable {
     result = prime * result + period;
     result = prime * result + periods;
     long temp;
-    temp = Double.doubleToLongBits(threshold);
+    temp = threshold.hashCode();
     result = prime * result + (int) (temp ^ (temp >>> 32));
     return result;
   }
@@ -182,7 +209,7 @@ public class AlarmSubExpression implements Serializable {
     this.periods = periods;
   }
 
-  public void setThreshold(double threshold) {
+  public void setThreshold(String threshold) {
     this.threshold = threshold;
   }
 

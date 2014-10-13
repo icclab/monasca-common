@@ -26,6 +26,17 @@ public class AlarmSubExpressionTest {
             .build()), AlarmOperator.GT, 5, 1, 3);
 
     assertEquals(expr, expected);
+    
+    expr = AlarmSubExpression.of("hpcs.compute{metric_name=apache_log, device=1, instance_id=5} LIKE \"GET /index.html\"");
+
+    expected = new AlarmSubExpression(null,
+        new MetricDefinition("hpcs.compute", ImmutableMap.<String, String>builder()
+            .put("instance_id", "5")
+            .put("metric_name", "apache_log")
+            .put("device", "1")
+            .build()), AlarmOperator.LIKE, "GET /index.html", AlarmSubExpression.DEFAULT_PERIOD, AlarmSubExpression.DEFAULT_PERIODS);
+
+    assertEquals(expr, expected);
   }
 
   public void shouldParseExpressionNoType() {
@@ -72,6 +83,16 @@ public class AlarmSubExpressionTest {
 
     assertTrue(expr.evaluate(6));
     assertFalse(expr.evaluate(4));
+    
+    expr = AlarmSubExpression.of("hpcs.compute{metric_name=apache_log, device=1, instance_id=5} LIKE \"GET /index.html\"");
+    
+    assertTrue(expr.evaluate("GET /index.html"));
+    assertFalse(expr.evaluate("GET /twiki"));
+    
+    expr = AlarmSubExpression.of("hpcs.compute{metric_name=apache_log, device=1, instance_id=5} REGEXP \"^[a-z]+$\"");
+    
+    assertTrue(expr.evaluate("helloworld"));
+    assertFalse(expr.evaluate("Hello"));
   }
 
   public void shouldParseExpressionWithoutSubject() {

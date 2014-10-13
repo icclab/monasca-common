@@ -32,7 +32,7 @@ class AlarmSubExpressionListener extends AlarmExpressionBaseListener {
   private String namespace;
   private SortedMap<String, String> dimensions = new TreeMap<String, String>();
   private AlarmOperator operator;
-  private double threshold;
+  private String threshold;
   private int period = AlarmSubExpression.DEFAULT_PERIOD;
   private int periods = AlarmSubExpression.DEFAULT_PERIODS;
   private List<Object> elements = new ArrayList<Object>();
@@ -50,7 +50,7 @@ class AlarmSubExpressionListener extends AlarmExpressionBaseListener {
     namespace = null;
     dimensions = new TreeMap<String, String>();
     operator = null;
-    threshold = 0;
+    threshold = null;
     period = AlarmSubExpression.DEFAULT_PERIOD;
     periods = AlarmSubExpression.DEFAULT_PERIODS;
   }
@@ -58,7 +58,9 @@ class AlarmSubExpressionListener extends AlarmExpressionBaseListener {
   @Override
   public void exitRelationalExprFwd(AlarmExpressionParser.RelationalExprFwdContext ctx) {
     // This is *right now* basically the same as a min or max function, convert it
-    if (operator == AlarmOperator.GT || operator == AlarmOperator.GTE)
+	if (operator == AlarmOperator.LIKE || operator == AlarmOperator.REGEXP)
+		function = null;
+	else if (operator == AlarmOperator.GT || operator == AlarmOperator.GTE)
       function = AggregateFunction.MAX;
     else
       function = AggregateFunction.MIN;
@@ -74,7 +76,9 @@ class AlarmSubExpressionListener extends AlarmExpressionBaseListener {
   public void exitRelationalExprBwd(AlarmExpressionParser.RelationalExprBwdContext ctx) {
     operator = AlarmOperator.reverseOperator(operator);
     // This is *right now* basically the same as a min or max function, convert it
-    if (operator == AlarmOperator.GT || operator == AlarmOperator.GTE)
+    if (operator == AlarmOperator.LIKE || operator == AlarmOperator.REGEXP)
+		function = null;
+    else if (operator == AlarmOperator.GT || operator == AlarmOperator.GTE)
       function = AggregateFunction.MAX;
     else
       function = AggregateFunction.MIN;
@@ -138,10 +142,37 @@ class AlarmSubExpressionListener extends AlarmExpressionBaseListener {
     assertSimpleExpression();
     operator = AlarmOperator.GTE;
   }
+  
+  @Override
+  public void enterEq(AlarmExpressionParser.EqContext ctx) {
+	assertSimpleExpression();
+	operator = AlarmOperator.EQ;
+  }
+
+  @Override
+  public void enterNeq(AlarmExpressionParser.NeqContext ctx) {
+	assertSimpleExpression();
+	operator = AlarmOperator.NEQ;
+  }
+
+  @Override
+  public void enterLike(AlarmExpressionParser.LikeContext ctx) {
+	assertSimpleExpression();
+	operator = AlarmOperator.LIKE;
+  }
+
+  @Override
+  public void enterRegexp(AlarmExpressionParser.RegexpContext ctx) {
+	assertSimpleExpression();
+	operator = AlarmOperator.REGEXP;
+  }
 
   @Override
   public void exitLiteral(AlarmExpressionParser.LiteralContext ctx) {
-    threshold = Double.valueOf(ctx.getChild(0).getText());
+	if (ctx.getChild(0).getText().charAt(0) == '"')
+		threshold = ctx.getChild(0).getText().substring(1, ctx.getChild(0).getText().length() - 1);
+	else
+		threshold = ctx.getChild(0).getText();
   }
 
   @Override
