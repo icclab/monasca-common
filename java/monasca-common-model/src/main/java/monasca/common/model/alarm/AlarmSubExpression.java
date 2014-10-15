@@ -43,15 +43,25 @@ public class AlarmSubExpression implements Serializable {
   private int period;
   private int periods;
 
+  public AlarmSubExpression(AggregateFunction function, MetricDefinition metricDefinition, 
+  		AlarmOperator operator, int threshold, int period, int periods) {
+	  this.function = function;
+	  this.metricDefinition = metricDefinition;
+	  this.operator = operator;
+	  this.threshold = String.valueOf(threshold);
+	  this.period = period;
+	  this.periods = periods;
+	}
+  
   public AlarmSubExpression(AggregateFunction function, MetricDefinition metricDefinition,
-	AlarmOperator operator, int threshold, int period, int periods) {
-	    this.function = function;
-	    this.metricDefinition = metricDefinition;
-	    this.operator = operator;
-	    this.threshold = String.valueOf(threshold);
-	    this.period = period;
-	    this.periods = periods;
-	  }
+  		AlarmOperator operator, double threshold, int period, int periods) {
+  	this.function = function;
+  	this.metricDefinition = metricDefinition;
+  	this.operator = operator;
+  	this.threshold = String.valueOf(threshold);
+  	this.period = period;
+  	this.periods = periods;
+  }
   
   public AlarmSubExpression(AggregateFunction function, MetricDefinition metricDefinition,
       AlarmOperator operator, String threshold, int period, int periods) {
