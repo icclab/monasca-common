@@ -104,12 +104,21 @@ public class SlidingWindowStats {
    * @return true if the value was added else false if it the {@code timestamp} was outside the
    *         window
    */
-  public boolean addValue(double value, long timestamp) {
+  public boolean addValue(String value, long timestamp) {
     timestamp = timescale.adjust(timestamp);
     int index = indexOfTime(timestamp);
     if (index == -1)
       return false;
     slots[index].stat.addValue(value);
+    return true;
+  }
+  
+  public boolean addValue(double value, long timestamp) {
+    timestamp = timescale.adjust(timestamp);
+    int index = indexOfTime(timestamp);
+    if (index == -1)
+      return false;
+    slots[index].stat.addValue(String.valueOf(value));
     return true;
   }
 

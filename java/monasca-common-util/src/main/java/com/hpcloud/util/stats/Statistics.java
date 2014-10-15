@@ -73,6 +73,15 @@ public final class Statistics {
       initialized = true;
       this.value++;
     }
+
+		@Override
+		public void addValue(String value) {
+			try {
+				double d = Double.parseDouble(value);
+				
+				addValue(d);
+			} catch (Exception e) {}
+		}
   }
 
   public static class Max extends AbstractStatistic {
@@ -84,6 +93,15 @@ public final class Statistics {
       } else if (value > this.value)
         this.value = value;
     }
+
+		@Override
+		public void addValue(String value) {
+			try {
+				double d = Double.parseDouble(value);
+				
+				addValue(d);
+			} catch (Exception e) {}
+		}
   }
 
   public static class Min extends AbstractStatistic {
@@ -95,6 +113,15 @@ public final class Statistics {
       } else if (value < this.value)
         this.value = value;
     }
+
+		@Override
+		public void addValue(String value) {
+			try {
+				double d = Double.parseDouble(value);
+				
+				addValue(d);
+			} catch (Exception e) {}
+		}
   }
 
   public static class Sum extends AbstractStatistic {
@@ -103,6 +130,15 @@ public final class Statistics {
       initialized = true;
       this.value += value;
     }
+
+		@Override
+		public void addValue(String value) {
+			try {
+				double d = Double.parseDouble(value);
+				
+				addValue(d);
+			} catch (Exception e) {}
+		}
   }
 
   private Statistics() {

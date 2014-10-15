@@ -21,6 +21,8 @@ package com.hpcloud.util.stats;
  */
 public interface Statistic {
   /** Adds the {@code value} to the statistic. */
+  void addValue(String value);
+  
   void addValue(double value);
 
   /** Returns true if the statistic has been initialized with a value, else false. */
