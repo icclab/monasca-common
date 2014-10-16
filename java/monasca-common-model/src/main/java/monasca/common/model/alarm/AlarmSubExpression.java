@@ -120,8 +120,20 @@ public class AlarmSubExpression implements Serializable {
     if (threshold == null) {
     	if (other.threshold != null)
     		return false;    	
-    } else if (!threshold.equals(other.threshold))
-    	return false;
+    } else {
+    	if (!threshold.equals(other.threshold)) {
+    		try {
+      		double d1 = Double.parseDouble(threshold) + 0.0;
+      		double d2 = Double.parseDouble(other.threshold) + 0.0;
+      		
+      		if (d1 != d2)
+      			return false;
+    		} catch (Exception e) {
+    			return false;
+    		}
+    	}
+    }
+    	
     return true;
   }
 
