@@ -234,6 +234,10 @@ public class AlarmSubExpression implements Serializable {
   public void setThreshold(String threshold) {
     this.threshold = threshold;
   }
+  
+  public void setThreshold(double threshold) {
+  	this.threshold = String.valueOf(threshold);
+  }
 
   @Override
   public String toString() {
