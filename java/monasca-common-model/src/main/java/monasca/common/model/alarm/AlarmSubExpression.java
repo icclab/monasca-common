@@ -23,10 +23,13 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import monasca.common.model.alarm.AlarmExpressionLexer;
 import monasca.common.model.alarm.AlarmExpressionParser;
 import monasca.common.model.metric.MetricDefinition;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Alarm sub expression value object.
@@ -231,10 +234,12 @@ public class AlarmSubExpression implements Serializable {
     this.periods = periods;
   }
 
+  @JsonProperty("threshold")
   public void setThreshold(String threshold) {
     this.threshold = threshold;
   }
   
+  @JsonIgnore
   public void setThreshold(double threshold) {
   	this.threshold = String.valueOf(threshold);
   }
