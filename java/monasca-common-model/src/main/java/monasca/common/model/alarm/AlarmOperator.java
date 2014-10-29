@@ -71,6 +71,26 @@ public enum AlarmOperator {
     } 
   }
   
+  public boolean evaluate(double lhs, String rhsString) {
+  	double rhs = Double.valueOf(rhsString);
+  	switch (this) {
+        case LT:
+          return lhs < rhs;
+        case LTE:
+          return lhs <= rhs;
+        case GT:
+          return lhs > rhs;
+        case GTE:
+          return lhs >= rhs;
+        case EQ:
+          return lhs == rhs;
+        case NEQ:
+      	  return lhs != rhs;
+        default:
+          return false;
+      } 
+    }
+  
   public boolean evaluate(String lhs, String rhs) {
 	switch (this) {
 	  case EQ: {

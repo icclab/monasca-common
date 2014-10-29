@@ -171,6 +171,6 @@ public class AlarmSubExpressionTest {
   }
   
   public void shouldAllowDecimalThresholds() {
-    assertEquals(AlarmSubExpression.of("avg(hpcs.compute) > 2.375").getThreshold(), 2.375);
+    assertEquals(Double.valueOf(AlarmSubExpression.of("avg(hpcs.compute) > 2.375").getThreshold()), 2.375);
   }
 }

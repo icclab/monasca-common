@@ -190,10 +190,14 @@ public class AlarmSubExpression implements Serializable {
   public int getPeriods() {
     return periods;
   }
-
-  public double getThreshold() {
-    return Double.valueOf(threshold);
+  
+  public String getThreshold() {
+  	return threshold;
   }
+
+  /*public double getThreshold() {
+    return Double.valueOf(threshold);
+  }*/
   
   public String getPattern() {
 	return threshold;
