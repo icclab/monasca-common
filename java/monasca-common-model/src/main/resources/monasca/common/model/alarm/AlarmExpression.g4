@@ -101,6 +101,7 @@ functionType
     | SUM
     | CNT
     | AVG
+    | CONCAT
     ;
 
 primary
@@ -140,6 +141,7 @@ keyword
     | SUM
     | CNT
     | AVG
+    | CONCAT
 	;
 
 period
@@ -253,6 +255,10 @@ CNT
 AVG
     : [aA][vV][gG]
     ;
+    
+CONCAT
+	: [cC][oO][nN][cC][aA][tT]
+	;
 
 INTEGER
     : DIGIT+
@@ -268,8 +274,8 @@ TXT
 
 STRING
   : '"' .*? '"'
-  ; 
-
+  ;
+  
 fragment
 LETTER
   : '\u0041'..'\u005a'       // A-Z

@@ -161,9 +161,9 @@ public class AlarmSubExpression implements Serializable {
       sb.append(", ").append(period);
     try {
       double d = Double.parseDouble(threshold);
-      sb.append(") ").append(operator).append(' ').append(d);
+      sb.append(") ").append(operator).append(" ").append(d);
     } catch (Exception e) {
-      sb.append(") ").append(operator).append(' ').append(threshold);
+      sb.append(") ").append(operator).append(" \"").append(threshold).append("\"");
     }
     
     if (periods != 1)

@@ -20,9 +20,9 @@ package monasca.common.util.stats;
  * Statistic implementations.
  */
 public final class Statistics {
-  public static abstract class AbstractStatistic implements Statistic {
+  public static abstract class AbstractStatistic<T> implements Statistic<T> {
     protected boolean initialized;
-    protected double value;
+    protected T value;
 
     @Override
     public boolean isInitialized() {
@@ -32,61 +32,86 @@ public final class Statistics {
     @Override
     public void reset() {
       initialized = false;
-      value = 0;
+      value = null;
     }
 
     @Override
     public String toString() {
-      return Double.valueOf(value()).toString();
+      return String.valueOf(value());
     }
 
     @Override
-    public double value() {
-      return !initialized ? Double.NaN : value;
+    public T value() {
+      return !initialized ? null : value;
     }
   }
 
   public static class Average extends Sum {
     protected int count;
-
+    
+    public Average() {
+    	reset();
+    }
+    
     @Override
-    public void addValue(double value) {
+    public void addValue(Double value) {
       super.addValue(value);
       this.count++;
     }
+    
+    @Override
+		public void addValue(String value) {
+			try {
+				addValue(Double.parseDouble(value));
+			} catch (Exception e) {}
+		}
 
+    @Override
+    public Double value() {
+      return !initialized ? Double.NaN : count == 0 ? 0 : value / count;
+    }
+    
     @Override
     public void reset() {
-      super.reset();
+    	initialized = false;
+      value = 0.0;
       count = 0;
-    }
-
-    @Override
-    public double value() {
-      return !initialized ? Double.NaN : count == 0 ? 0 : value / count;
     }
   }
 
-  public static class Count extends AbstractStatistic {
+  public static class Count extends AbstractStatistic<Double> {
+  	public Count() {
+  		reset();
+  	}
+  	
     @Override
-    public void addValue(double value) {
-      initialized = true;
+    public void addValue(Double value) {
+    	initialized = true;
       this.value++;
     }
 
 		@Override
 		public void addValue(String value) {
 			try {
-				double d = Double.parseDouble(value);
-				
-				addValue(d);
+				addValue(Double.parseDouble(value));
 			} catch (Exception e) {}
 		}
+		
+		@Override
+    public void reset() {
+      initialized = false;
+      value = 0.0;
+    }
+		
+		@Override
+    public Double value() {
+      return !initialized ? Double.NaN : value;
+    }
   }
 
-  public static class Max extends AbstractStatistic {
-    @Override
-    public void addValue(double value) {
+  public static class Max extends AbstractStatistic<Double> {
+   @Override
+    public void addValue(Double value) {
       if (!initialized) {
         initialized = true;
         this.value = value;
@@ -97,47 +122,77 @@ public final class Statistics {
 		@Override
 		public void addValue(String value) {
 			try {
-				double d = Double.parseDouble(value);
-				
-				addValue(d);
+				addValue(Double.parseDouble(value));
 			} catch (Exception e) {}
 		}
+		
+		@Override
+    public Double value() {
+      return !initialized ? Double.NaN : value;
+    }
   }
 
-  public static class Min extends AbstractStatistic {
-    @Override
-    public void addValue(double value) {
-      if (!initialized) {
+  public static class Min extends AbstractStatistic<Double> {
+  	@Override
+		public void addValue(Double value) {
+  		if (!initialized) {
         initialized = true;
         this.value = value;
       } else if (value < this.value)
         this.value = value;
-    }
+		}
 
 		@Override
 		public void addValue(String value) {
 			try {
-				double d = Double.parseDouble(value);
-				
-				addValue(d);
+				addValue(Double.parseDouble(value));
 			} catch (Exception e) {}
 		}
+		
+		@Override
+    public Double value() {
+      return !initialized ? Double.NaN : value;
+    }
   }
 
-  public static class Sum extends AbstractStatistic {
-    @Override
-    public void addValue(double value) {
-      initialized = true;
-      this.value += value;
-    }
+  public static class Sum extends AbstractStatistic<Double> {
+  	public Sum() {
+  		reset();
+  	}
+  	
+		@Override
+		public void addValue(Double value) {
+			initialized = true;
+			this.value += value;
+		}
 
 		@Override
 		public void addValue(String value) {
 			try {
-				double d = Double.parseDouble(value);
-				
-				addValue(d);
+				addValue(Double.parseDouble(value));
 			} catch (Exception e) {}
+		}
+		
+		@Override
+    public void reset() {
+      initialized = false;
+      value = 0.0;
+    }
+		
+		@Override
+    public Double value() {
+      return !initialized ? Double.NaN : value;
+    }
+  }
+  
+  public static class Concat extends AbstractStatistic<String> {
+  	@Override
+		public void addValue(String value) {
+			if (!initialized) {
+        initialized = true;
+        this.value = value;
+      } else
+        this.value = this.value.concat(value);
 		}
   }
 

@@ -19,11 +19,10 @@ package monasca.common.util.stats;
 /**
  * Statistic.
  */
-public interface Statistic {
+public interface Statistic<T> {
   /** Adds the {@code value} to the statistic. */
+  void addValue(T value);
   void addValue(String value);
-  
-  void addValue(double value);
 
   /** Returns true if the statistic has been initialized with a value, else false. */
   boolean isInitialized();
@@ -32,5 +31,5 @@ public interface Statistic {
   void reset();
 
   /** Returns the value of the statistic. */
-  double value();
+  T value();
 }

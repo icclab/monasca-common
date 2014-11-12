@@ -11,7 +11,7 @@ import monasca.common.util.time.TimeResolution;
 @Test
 public class SlidingWindowStatsTest {
   public void testIndexOf() {
-    SlidingWindowStats window = new SlidingWindowStats(Statistics.Sum.class,
+    SlidingWindowStats<Double> window = new SlidingWindowStats<Double>(Statistics.Sum.class,
         TimeResolution.ABSOLUTE, 1, 5, 2, 5);
 
     // Window 1, 2, 3, 4, 5, 6, 7
@@ -47,14 +47,14 @@ public class SlidingWindowStatsTest {
   }
 
   public void shouldGetTimestamps() {
-    SlidingWindowStats window = new SlidingWindowStats(Statistics.Sum.class,
+    SlidingWindowStats<Double> window = new SlidingWindowStats<Double>(Statistics.Sum.class,
         TimeResolution.ABSOLUTE, 1, 5, 2, 10);
 
     assertArraysEqual(window.getTimestamps(), new long[] { 6, 7, 8, 9, 10 });
     window.slideViewTo(14);
     assertArraysEqual(window.getTimestamps(), new long[] { 10, 11, 12, 13, 14 });
 
-    window = new SlidingWindowStats(Statistics.Average.class, TimeResolution.ABSOLUTE, 3, 3, 2, 6);
+    window = new SlidingWindowStats<Double>(Statistics.Average.class, TimeResolution.ABSOLUTE, 3, 3, 2, 6);
 
     assertArraysEqual(window.getTimestamps(), new long[] { 0, 3, 6 });
     window.slideViewTo(14);
@@ -62,7 +62,7 @@ public class SlidingWindowStatsTest {
   }
 
   public void shouldSlideViewTo() {
-    SlidingWindowStats window = new SlidingWindowStats(Statistics.Average.class,
+    SlidingWindowStats<Double> window = new SlidingWindowStats<Double>(Statistics.Average.class,
         TimeResolution.ABSOLUTE, 3, 3, 2, 6);
 
     window.slideViewTo(2);
@@ -86,7 +86,7 @@ public class SlidingWindowStatsTest {
   }
 
   public void shouldAddValueAndGetWindowValues() {
-    SlidingWindowStats window = new SlidingWindowStats(Statistics.Average.class,
+    SlidingWindowStats<Double> window = new SlidingWindowStats<Double>(Statistics.Average.class,
         TimeResolution.ABSOLUTE, 3, 3, 2, 9);
     for (int i = 0; i < 5; i++)
       window.addValue(999, i * 3);
@@ -101,12 +101,12 @@ public class SlidingWindowStatsTest {
   }
 
   public void shouldAddValueAndGetViewValues() {
-    SlidingWindowStats window = new SlidingWindowStats(Statistics.Average.class,
+    SlidingWindowStats<Double> window = new SlidingWindowStats<Double>(Statistics.Average.class,
         TimeResolution.ABSOLUTE, 3, 3, 2, 9);
     for (int i = 0; i < 5; i++)
       window.addValue(999, i * 3);
 
-    assertEquals(window.getViewValues(), new double[] { 999, 999, 999 });
+    assertEquals(window.getViewValues(), new double[] { 999.0, 999.0, 999.0 });
 
     window.slideViewTo(15);
     assertEquals(window.getViewValues(), new double[] { 999, 999, 999 });
@@ -119,7 +119,7 @@ public class SlidingWindowStatsTest {
   }
 
   public void testIndexOfTime() {
-    SlidingWindowStats window = new SlidingWindowStats(Statistics.Average.class,
+    SlidingWindowStats<Double> window = new SlidingWindowStats<Double>(Statistics.Average.class,
         TimeResolution.ABSOLUTE, 3, 3, 2, 15);
 
     // Slots look like 6 9 12 15 18
@@ -158,7 +158,7 @@ public class SlidingWindowStatsTest {
   }
 
   public void shouldGetValue() {
-    SlidingWindowStats window = new SlidingWindowStats(Statistics.Sum.class,
+    SlidingWindowStats<Double> window = new SlidingWindowStats<Double>(Statistics.Sum.class,
         TimeResolution.ABSOLUTE, 5, 3, 2, 20);
     // Logical window is 5 10 15
     window.addValue(2, 5);
@@ -179,7 +179,7 @@ public class SlidingWindowStatsTest {
   }
 
   public void testLengthToIndex() {
-    SlidingWindowStats window = new SlidingWindowStats(Statistics.Sum.class,
+    SlidingWindowStats<Double> window = new SlidingWindowStats<Double>(Statistics.Sum.class,
         TimeResolution.ABSOLUTE, 1, 5, 2, 6);
     // Window 1, 2, 3, 4, 5, 6, 7
     assertEquals(window.lengthToIndex(6), 7);
@@ -214,7 +214,7 @@ public class SlidingWindowStatsTest {
   }
 
   public void shouldGetValuesUpTo() {
-    SlidingWindowStats window = new SlidingWindowStats(Statistics.Sum.class,
+    SlidingWindowStats<Double> window = new SlidingWindowStats<Double>(Statistics.Sum.class,
         TimeResolution.ABSOLUTE, 5, 3, 2, 20);
     // Window is 5 10 15 20 25
     window.addValue(2, 5);
@@ -256,12 +256,12 @@ public class SlidingWindowStatsTest {
   }
 
   public void testToString() {
-    SlidingWindowStats smallWindow = new SlidingWindowStats(Statistics.Sum.class,
+    SlidingWindowStats<Double> smallWindow = new SlidingWindowStats<Double>(Statistics.Sum.class,
         TimeResolution.ABSOLUTE, 5, 3, 2, 20);
     assertEquals(smallWindow.toString(),
         "SlidingWindowStats timescale = ABSOLUTE slotWidth = 5 viewEndTimestamp = 20 slotEndTimestamp = 20 [(5=NaN, 10=NaN, 15=NaN), 20=NaN, 25=NaN]");
 
-    SlidingWindowStats bigWindow = new SlidingWindowStats(Statistics.Sum.class,
+    SlidingWindowStats<Double> bigWindow = new SlidingWindowStats<Double>(Statistics.Sum.class,
         TimeResolution.ABSOLUTE, 10, 10, 2, 50);
     assertEquals(bigWindow.toString(),
         "SlidingWindowStats timescale = ABSOLUTE slotWidth = 10 viewEndTimestamp = 50 slotEndTimestamp = 50 [(... 20=NaN, 30=NaN, 40=NaN), 50=NaN, 60=NaN]");

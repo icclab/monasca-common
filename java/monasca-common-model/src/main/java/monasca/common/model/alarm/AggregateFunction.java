@@ -17,15 +17,17 @@
 package monasca.common.model.alarm;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+
 import monasca.common.util.stats.Statistic;
 import monasca.common.util.stats.Statistics.Average;
+import monasca.common.util.stats.Statistics.Concat;
 import monasca.common.util.stats.Statistics.Count;
 import monasca.common.util.stats.Statistics.Max;
 import monasca.common.util.stats.Statistics.Min;
 import monasca.common.util.stats.Statistics.Sum;
 
 public enum AggregateFunction {
-  MIN, MAX, SUM, COUNT, AVG;
+  CONCAT, MIN, MAX, SUM, COUNT, AVG;
 
   @JsonCreator
   public static AggregateFunction fromJson(String text) {
@@ -37,7 +39,7 @@ public enum AggregateFunction {
     return name().toLowerCase();
   }
 
-  public Class<? extends Statistic> toStatistic() {
+  public Class<? extends Statistic<?>> toStatistic() {
     if (AggregateFunction.AVG.equals(this))
       return Average.class;
     if (AggregateFunction.COUNT.equals(this))
@@ -48,6 +50,8 @@ public enum AggregateFunction {
       return Min.class;
     if (AggregateFunction.MAX.equals(this))
       return Max.class;
+    if (AggregateFunction.CONCAT.equals(this))
+    	return Concat.class;
     return null;
   }
 }

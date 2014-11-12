@@ -27,9 +27,9 @@ public class AlarmSubExpressionTest {
 
     assertEquals(expr, expected);
     
-    expr = AlarmSubExpression.of("hpcs.compute{metric_name=apache_log, device=1, instance_id=5} LIKE \"GET /index.html\"");
+    expr = AlarmSubExpression.of("concat(hpcs.compute{metric_name=apache_log, device=1, instance_id=5}) LIKE \"GET /index.html\"");
 
-    expected = new AlarmSubExpression(null,
+    expected = new AlarmSubExpression(AggregateFunction.CONCAT,
         new MetricDefinition("hpcs.compute", ImmutableMap.<String, String>builder()
             .put("instance_id", "5")
             .put("metric_name", "apache_log")
@@ -93,6 +93,11 @@ public class AlarmSubExpressionTest {
     
     assertTrue(expr.evaluate("helloworld"));
     assertFalse(expr.evaluate("Hello"));
+    
+    expr = AlarmSubExpression.of("log.test LIKE \"bubu\"");
+    
+    assertTrue(expr.evaluate("cinebubulala"));
+    assertFalse(expr.evaluate("cinebuulala"));
   }
 
   public void shouldParseExpressionWithoutSubject() {

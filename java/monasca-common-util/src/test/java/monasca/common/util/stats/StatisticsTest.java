@@ -20,9 +20,9 @@ public class StatisticsTest {
   }
 
   @Test(dataProvider = "metricTypes")
-  public void testStat(Statistic stat, double expectedValue) {
-    stat.addValue(2);
-    stat.addValue(4);
+  public void testStat(Statistic<Double> stat, double expectedValue) {
+    stat.addValue(2.0);
+    stat.addValue(4.0);
     assertEquals(stat.value(), expectedValue, stat.getClass().getName());
   }
 }

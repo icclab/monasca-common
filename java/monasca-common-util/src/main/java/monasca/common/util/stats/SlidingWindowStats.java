@@ -16,6 +16,11 @@
  */
 package monasca.common.util.stats;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import javax.annotation.concurrent.NotThreadSafe;
 
 import monasca.common.util.Exceptions;
@@ -26,23 +31,23 @@ import monasca.common.util.time.TimeResolution;
  * The window provides a fixed size view over the total number of slots in the window.
  */
 @NotThreadSafe
-public class SlidingWindowStats {
+public class SlidingWindowStats<T> {
   private final TimeResolution timescale;
   private final long slotWidth;
   private final int numViewSlots;
   private final long windowLength;
-  private final Slot[] slots;
+  private final List<Slot<T>> slots;
 
   private int windowBeginIndex;
   private long viewEndTimestamp;
   private long slotEndTimestamp;
   private long windowEndTimestamp;
 
-  private static class Slot {
+  private static class Slot<T> {
     private long timestamp;
-    private Statistic stat;
+    private Statistic<T> stat;
 
-    private Slot(long timestamp, Statistic stat) {
+    private Slot(long timestamp, Statistic<T> stat) {
       this.timestamp = timestamp;
       this.stat = stat;
     }
@@ -69,7 +74,7 @@ public class SlidingWindowStats {
    * @param numFutureSlots the number of future slots to allow values for
    * @param viewEndTimestamp timestamp to end view at, non-inclusive
    */
-  public SlidingWindowStats(Class<? extends Statistic> statType, TimeResolution timeResolution,
+	public SlidingWindowStats(Class<? extends Statistic<T>> statType, TimeResolution timeResolution,
       long slotWidth, int numViewSlots, int numFutureSlots, long viewEndTimestamp) {
     this.timescale = timeResolution;
     this.slotWidth = slotWidth;
@@ -80,16 +85,19 @@ public class SlidingWindowStats {
     slotEndTimestamp = this.viewEndTimestamp;
     windowEndTimestamp = this.viewEndTimestamp + (numFutureSlots * slotWidth);
 
-    slots = new Slot[numViewSlots + numFutureSlots];
+    slots = new ArrayList<Slot<T>>();
     long timestamp = windowEndTimestamp - slotWidth;
+
     for (int i = numViewSlots + numFutureSlots - 1; i > -1; i--, timestamp -= slotWidth)
-      slots[i] = createSlot(timestamp, statType);
+      slots.add(createSlot(timestamp, statType));
+    
+    Collections.reverse(slots);
   }
 
   /** Returns a new slot for the {@code timestamp} and {@code statType}. */
-  private static Slot createSlot(long timestamp, Class<? extends Statistic> statType) {
+  private static <T> Slot<T> createSlot(long timestamp, Class<? extends Statistic<T>> statType) {
     try {
-      return new Slot(timestamp, statType.newInstance());
+      return new Slot<>(timestamp, statType.newInstance());
     } catch (Exception e) {
       throw Exceptions.uncheck(e, "Failed to initialize slot");
     }
@@ -109,7 +117,7 @@ public class SlidingWindowStats {
     int index = indexOfTime(timestamp);
     if (index == -1)
       return false;
-    slots[index].stat.addValue(value);
+    slots.get(index).stat.addValue(value);
     return true;
   }
   
@@ -118,13 +126,13 @@ public class SlidingWindowStats {
     int index = indexOfTime(timestamp);
     if (index == -1)
       return false;
-    slots[index].stat.addValue(String.valueOf(value));
+    slots.get(index).stat.addValue(String.valueOf(value));
     return true;
   }
 
   /** Returns the number of slots in the window. */
   public int getSlotCount() {
-    return slots.length;
+    return slots.size();
   }
 
   /** Returns the window's slot width. */
@@ -138,7 +146,7 @@ public class SlidingWindowStats {
    */
   public long[] getTimestamps() {
     long[] timestamps = new long[numViewSlots];
-    long timestamp = windowEndTimestamp - ((slots.length - 1) * slotWidth);
+    long timestamp = windowEndTimestamp - ((slots.size() - 1) * slotWidth);
     for (int i = 0; i < numViewSlots; i++, timestamp += slotWidth)
       timestamps[i] = timestamp;
     return timestamps;
@@ -150,12 +158,12 @@ public class SlidingWindowStats {
    * @param timestamp to get value for
    * @throws IllegalStateException if no value is within the window for the {@code timestamp}
    */
-  public double getValue(long timestamp) {
+  public T getValue(long timestamp) {
     timestamp = timescale.adjust(timestamp);
     int index = indexOfTime(timestamp);
     if (index == -1)
       throw new IllegalStateException(timestamp + " is outside of the window");
-    return slots[index].stat.value();
+    return slots.get(index).stat.value();
   }
 
   /**
@@ -165,37 +173,40 @@ public class SlidingWindowStats {
    * @param timestamp to get value for
    * @throws IllegalStateException if no value is within the window for the {@code timestamp}
    */
-  public double[] getValuesUpTo(long timestamp) {
+  @SuppressWarnings("unchecked")
+	public T[] getValuesUpTo(long timestamp) {
     timestamp = timescale.adjust(timestamp);
     int endIndex = indexOfTime(timestamp);
     if (endIndex == -1)
       throw new IllegalStateException(timestamp + " is outside of the window");
-    double[] values = new double[lengthToIndex(endIndex)];
+    T[] values = (T[]) new Object[lengthToIndex(endIndex)];
     for (int i = 0, index = windowBeginIndex; i < values.length; i++, index = indexAfter(index))
-      if (slots[index] != null)
-        values[i] = slots[index].stat.value();
+      if (slots.get(index) != null)
+        values[i] = slots.get(index).stat.value();
     return values;
   }
 
   /**
    * Returns the values of the sliding view increasing from oldest to newest.
    */
-  public double[] getViewValues() {
-    double[] values = new double[numViewSlots];
+  @SuppressWarnings("unchecked")
+	public T[] getViewValues() {
+    T[] values = (T[]) new Object[numViewSlots];
     for (int i = 0, index = windowBeginIndex; i < numViewSlots; i++, index = indexAfter(index))
-      if (slots[index] != null)
-        values[i] = slots[index].stat.value();
+      if (slots.get(index) != null)
+        values[i] = slots.get(index).stat.value();
     return values;
   }
 
   /**
    * Returns the values of the sliding window increasing from oldest to newest.
    */
-  public double[] getWindowValues() {
-    double[] values = new double[slots.length];
-    for (int i = 0, index = windowBeginIndex; i < slots.length; i++, index = indexAfter(index))
-      if (slots[index] != null)
-        values[i] = slots[index].stat.value();
+  @SuppressWarnings("unchecked")
+	public T[] getWindowValues() {
+    T[] values = (T[]) new Object[slots.size()];
+    for (int i = 0, index = windowBeginIndex; i < slots.size(); i++, index = indexAfter(index))
+      if (slots.get(index) != null)
+        values[i] = slots.get(index).stat.value();
     return values;
   }
 
@@ -214,7 +225,7 @@ public class SlidingWindowStats {
 
     for (int i = 0; i < slotsToAdvance; i++) {
       windowBeginIndex = indexAfter(windowBeginIndex);
-      Slot slot = slots[indexOf(slots.length - 1)];
+      Slot<T> slot = slots.get(indexOf(slots.size() - 1));
       slot.timestamp = windowEndTimestamp;
       slot.stat.reset();
 
@@ -240,12 +251,12 @@ public class SlidingWindowStats {
     if (startIndex != 0)
       b.append("... ");
     int index = indexOf(startIndex);
-    for (int i = startIndex; i < slots.length; i++, index = indexAfter(index)) {
+    for (int i = startIndex; i < slots.size(); i++, index = indexAfter(index)) {
       if (i == numViewSlots)
         b.append("), ");
       else if (i != startIndex)
         b.append(", ");
-      b.append(slots[index]);
+      b.append(slots.get(index));
     }
 
     return b.append(']').toString();
@@ -257,8 +268,8 @@ public class SlidingWindowStats {
    */
   int indexOf(int slotIndex) {
     int offset = windowBeginIndex + slotIndex;
-    if (offset >= slots.length)
-      offset -= slots.length;
+    if (offset >= slots.size())
+      offset -= slots.size();
     return offset;
   }
 
@@ -285,11 +296,11 @@ public class SlidingWindowStats {
     if (windowBeginIndex <= slotIndex)
       return slotIndex - windowBeginIndex + 1;
     else
-      return slotIndex + slots.length - windowBeginIndex + 1;
+      return slotIndex + slots.size() - windowBeginIndex + 1;
   }
 
   /** Returns the physical index for the slot logically positioned after the {@code index}. */
   private int indexAfter(int index) {
-    return ++index == slots.length ? 0 : index;
+    return ++index == slots.size() ? 0 : index;
   }
 }

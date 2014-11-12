@@ -16,7 +16,7 @@ import monasca.common.model.metric.MetricDefinition;
 public class AlarmExpressionTest {
     public void shouldParseExpression() {
         AlarmExpression expr = new AlarmExpression(
-                "avg(hpcs.compute{instance_id=5,metric_name=cpu,device=1}, 1) > 5 times 3 and avg(hpcs.compute{flavor_id=3,metric_name=mem}, 2) < 4 times 3 and hpcs.compute{instance_id=5,metric_name=system_log,device=1} REGEXP \"^[a-z]$\"");
+                "avg(hpcs.compute{instance_id=5,metric_name=cpu,device=1}, 1) > 5 times 3 and avg(hpcs.compute{flavor_id=3,metric_name=mem}, 2) < 4 times 3 and concat(hpcs.compute{instance_id=5,metric_name=system_log,device=1}) REGEXP \"^[a-z]$\"");
         List<AlarmSubExpression> alarms = expr.getSubExpressions();
 
         AlarmSubExpression expected1 = new AlarmSubExpression(AggregateFunction.AVG,
@@ -30,7 +30,7 @@ public class AlarmExpressionTest {
                         .put("flavor_id", "3")
                         .put("metric_name", "mem")
                         .build()), AlarmOperator.LT, 4, 2, 3);
-        AlarmSubExpression expected3 = new AlarmSubExpression(null,
+        AlarmSubExpression expected3 = new AlarmSubExpression(AggregateFunction.CONCAT,
                 new MetricDefinition("hpcs.compute", ImmutableMap.<String, String>builder()
                         .put("instance_id", "5")
                         .put("metric_name", "system_log")
@@ -43,8 +43,6 @@ public class AlarmExpressionTest {
     }
 
     public void shouldParseString() {
-
-
         AlarmExpression expr = new AlarmExpression(
                 "avg(hpcs.compute{instance_id=5,metric_name=cpu,device=1, url=\"https://www.google.com/?startpage=3&happygoing\"}, 1) > 5 times 3 and avg(hpcs.compute{flavor_id=3,metric_name=mem, specialchars=\"!@#$%^&*()~<>{}[],.\"}, 2) < 4 times 3");
         List<AlarmSubExpression> alarms = expr.getSubExpressions();

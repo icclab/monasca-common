@@ -59,7 +59,7 @@ class AlarmSubExpressionListener extends AlarmExpressionBaseListener {
   public void exitRelationalExprFwd(AlarmExpressionParser.RelationalExprFwdContext ctx) {
     // This is *right now* basically the same as a min or max function, convert it
 	if (operator == AlarmOperator.LIKE || operator == AlarmOperator.REGEXP)
-		function = null;
+		function = AggregateFunction.CONCAT;
 	else if (operator == AlarmOperator.GT || operator == AlarmOperator.GTE)
       function = AggregateFunction.MAX;
     else
@@ -77,7 +77,7 @@ class AlarmSubExpressionListener extends AlarmExpressionBaseListener {
     operator = AlarmOperator.reverseOperator(operator);
     // This is *right now* basically the same as a min or max function, convert it
     if (operator == AlarmOperator.LIKE || operator == AlarmOperator.REGEXP)
-		function = null;
+    	function = AggregateFunction.CONCAT;
     else if (operator == AlarmOperator.GT || operator == AlarmOperator.GTE)
       function = AggregateFunction.MAX;
     else
@@ -145,26 +145,26 @@ class AlarmSubExpressionListener extends AlarmExpressionBaseListener {
   
   @Override
   public void enterEq(AlarmExpressionParser.EqContext ctx) {
-	assertSimpleExpression();
-	operator = AlarmOperator.EQ;
+		assertSimpleExpression();
+		operator = AlarmOperator.EQ;
   }
 
   @Override
   public void enterNeq(AlarmExpressionParser.NeqContext ctx) {
-	assertSimpleExpression();
-	operator = AlarmOperator.NEQ;
+		assertSimpleExpression();
+		operator = AlarmOperator.NEQ;
   }
 
   @Override
   public void enterLike(AlarmExpressionParser.LikeContext ctx) {
-	assertSimpleExpression();
-	operator = AlarmOperator.LIKE;
+		assertSimpleExpression();
+		operator = AlarmOperator.LIKE;
   }
 
   @Override
   public void enterRegexp(AlarmExpressionParser.RegexpContext ctx) {
-	assertSimpleExpression();
-	operator = AlarmOperator.REGEXP;
+		assertSimpleExpression();
+		operator = AlarmOperator.REGEXP;
   }
 
   @Override
